@@ -3,54 +3,50 @@
  */
 package org.hyperledger.besu.secp256r1.demo;
 
-import org.apache.logging.slf4j.Log4jLoggerFactory;
 import org.hyperledger.besu.secp256r1.demo.Web3jNist.NistTransactionManager;
 import org.hyperledger.besu.secp256r1.demo.contract.DemoErc20;
-import org.slf4j.Logger;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.gas.DefaultGasProvider;
 
-import java.io.Console;
+import java.math.BigInteger;
 
 public class App {
-    static Logger LOG = new Log4jLoggerFactory().getLogger("SECP256R1-DEMO");
-
     public static void main(String[] args) throws Exception {
-
         Credentials owner = Credentials.create(
-                "04d88a793a5df3c0b3d8ef17a955f430d75353fb2e3d0298b812b493603d9db8",
-                "f29a2cb1c3c94e5eddb4f8c66487cbf7ca06c2de3f1fb9df25db82565a4df91e7c67b31c22724dc4602032cf21c45bfe5e276e213b1bc3bab15572539239cb42");
+                "24af1f94b309dc185e543407020f47ad483df8c19d4e10e6b7c9d3fd055651e8",
+                "55c13b3f34db03306c367f18c951ca96d7d5288f22234c5396558f88c4430178cebad90993b6f08e23b190796159d09838715b0b2f65d69b1ae91f93ea8c6775");
 
-        LOG.error("Owner address: " + owner.getAddress());
+        System.out.println("Owner address: " + owner.getAddress());
 
-        waitForUserInput();
+        Credentials user = Credentials.create(
+                "24af1f94b309dc185e543407020f47ad483df8c19d4e10e6b7c9d3fd055651e8",
+                "55c13b3f34db03306c367f18c951ca96d7d5288f22234c5396558f88c4430178cebad90993b6f08e23b190796159d09838715b0b2f65d69b1ae91f93ea8c6775");
+
+        System.out.println("User address: " + user.getAddress());
 
         Web3j web3j = Web3j.build(new HttpService("http://127.0.0.1:8545"));
-        NistTransactionManager transactionManager = new NistTransactionManager(web3j, owner);
+        NistTransactionManager transactionManagerOwner = new NistTransactionManager(web3j, owner);
+        NistTransactionManager transactionManagerUser = new NistTransactionManager(web3j, user);
 
-        DemoErc20 erc20 = DemoErc20.deploy(web3j, transactionManager, new DefaultGasProvider()).send();
+        DemoErc20 tokenOwner = DemoErc20.deploy(web3j, transactionManagerOwner, new DefaultGasProvider()).send();
 
-        LOG.error("Contract deployed at " +  erc20.getContractAddress());
+        System.out.println("Contract deployed at " +  tokenOwner.getContractAddress());
+        System.out.println("Contract deployed tx id " +  tokenOwner.getTransactionReceipt().get().getTransactionHash());
 
-        waitForUserInput();
+        BigInteger decimals = tokenOwner.decimals().send();
+        BigInteger transferAmountOwner = BigInteger.valueOf(10).multiply(decimals);
 
-        LOG.error("Contract deployed tx id " +  erc20.getTransactionReceipt().get().getTransactionHash());
+        TransactionReceipt receiptTransferOwner = tokenOwner.transfer(user.getAddress(), transferAmountOwner).send();
+        System.out.println("Sent 10 tokens to " + user.getAddress() + ": " + receiptTransferOwner.getTransactionHash());
 
-        waitForUserInput();
-    }
+        DemoErc20 tokenUser = DemoErc20.load(tokenOwner.getContractAddress(), web3j, transactionManagerUser, new DefaultGasProvider());
 
-    private static void waitForUserInput() {
-        Console console = System.console();
+        BigInteger transferAmountUser = BigInteger.valueOf(5).multiply(decimals);
 
-        if (console == null) {
-            // does not work when started with gradle
-            return;
-        }
-
-
-        console.format("\nPress ENTER to proceed.\n");
-        console.readLine();
+        TransactionReceipt receiptTransferUser = tokenUser.transfer(owner.getAddress(), transferAmountUser).send();
+        System.out.println("Sent 5 tokens to " + owner.getAddress() + ": " + receiptTransferUser.getTransactionHash());
     }
 }
