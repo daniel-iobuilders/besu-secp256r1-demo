@@ -29,6 +29,7 @@ public class NistSign {
                     CURVE_PARAMS.getG(),
                     CURVE_PARAMS.getN(),
                     CURVE_PARAMS.getH());
+    static final BigInteger HALF_CURVE_ORDER = CURVE_PARAMS.getN().shiftRight(1);
 
     public static SignatureData signMessage(byte[] message, ECKeyPair keyPair) {
         return signMessage(message, keyPair, true);
@@ -43,7 +44,7 @@ public class NistSign {
             messageHash = message;
         }
 
-        ECDSASignature sig = nistSign(messageHash, keyPair);
+        NistECDSASignature sig = sign(messageHash, keyPair);
 
         // Now we have to work backwards to figure out the recId needed to recover the signature.
         int recId = -1;
@@ -69,14 +70,14 @@ public class NistSign {
         return new SignatureData(v, r, s);
     }
 
-    public static ECDSASignature nistSign(byte[] transactionHash, ECKeyPair keyPair) {
+    public static NistECDSASignature sign(byte[] transactionHash, ECKeyPair keyPair) {
         ECDSASigner signer = new ECDSASigner(new HMacDSAKCalculator(new SHA256Digest()));
 
         ECPrivateKeyParameters privKey = new ECPrivateKeyParameters(keyPair.getPrivateKey(), CURVE);
         signer.init(true, privKey);
-        BigInteger[] components = signer.generateSignature(transactionHash);
+        BigInteger[] signatureComponents = signer.generateSignature(transactionHash);
 
-        return new ECDSASignature(components[0], components[1]).toCanonicalised();
+        return new NistECDSASignature(signatureComponents[0], signatureComponents[1]).toCanonicalised();
     }
 
 
@@ -101,7 +102,7 @@ public class NistSign {
      * @param message Hash of the data that was signed.
      * @return An ECKey containing only the public part, or null if recovery wasn't possible.
      */
-    public static BigInteger recoverFromSignature(int recId, ECDSASignature sig, byte[] message) {
+    public static BigInteger recoverFromSignature(int recId, NistECDSASignature sig, byte[] message) {
         verifyPrecondition(recId >= 0, "recId must be positive");
         verifyPrecondition(sig.r.signum() >= 0, "r must be positive");
         verifyPrecondition(sig.s.signum() >= 0, "s must be positive");

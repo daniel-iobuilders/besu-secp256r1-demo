@@ -11,7 +11,7 @@ import org.web3j.protocol.core.methods.response.EthCall;
 import org.web3j.protocol.core.methods.response.EthGetCode;
 import org.web3j.protocol.core.methods.response.EthGetTransactionCount;
 import org.web3j.protocol.core.methods.response.EthSendTransaction;
-import org.web3j.tx.ChainId;
+import org.web3j.tx.ChainIdLong;
 import org.web3j.tx.TransactionManager;
 import org.web3j.tx.exceptions.ContractCallException;
 import org.web3j.tx.exceptions.TxHashMismatchException;
@@ -64,12 +64,12 @@ public class NistTransactionManager extends TransactionManager {
     }
 
     public NistTransactionManager(Web3j web3j, Credentials credentials) {
-        this(web3j, credentials, ChainId.NONE);
+        this(web3j, credentials, ChainIdLong.NONE);
     }
 
     public NistTransactionManager(
             Web3j web3j, Credentials credentials, int attempts, int sleepDuration) {
-        this(web3j, credentials, ChainId.NONE, attempts, sleepDuration);
+        this(web3j, credentials, ChainIdLong.NONE, attempts, sleepDuration);
     }
 
     protected BigInteger getNonce() throws IOException {
@@ -148,14 +148,13 @@ public class NistTransactionManager extends TransactionManager {
     }
 
     /*
-     * @param rawTransaction a RawTransaction istance to be signed
+     * @param rawTransaction a RawTransaction instance to be signed
      * @return The transaction signed and encoded without ever broadcasting it
      */
     public String sign(RawTransaction rawTransaction) {
-
         byte[] signedMessage;
 
-        if (chainId > ChainId.NONE) {
+        if (chainId > ChainIdLong.NONE) {
             signedMessage = NistTransactionEncoder.signMessage(rawTransaction, chainId, credentials);
         } else {
             signedMessage = NistTransactionEncoder.signMessage(rawTransaction, credentials);

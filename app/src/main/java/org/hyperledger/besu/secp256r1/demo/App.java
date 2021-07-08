@@ -16,37 +16,37 @@ import java.math.BigInteger;
 public class App {
     public static void main(String[] args) throws Exception {
         Credentials owner = Credentials.create(
-                "24af1f94b309dc185e543407020f47ad483df8c19d4e10e6b7c9d3fd055651e8",
-                "55c13b3f34db03306c367f18c951ca96d7d5288f22234c5396558f88c4430178cebad90993b6f08e23b190796159d09838715b0b2f65d69b1ae91f93ea8c6775");
+                "9588ef2ee32964c5ed39b9ff5e0a8abeb61901e658f301c4699a7810205051ee",
+                "eaffc9af968bb33e1d69e5a7ba1028d5d31c316343d8c8427d215c19c37004df8f1f849381232a699de9750800b10c8efb2bc49ed6591c40d3cae0f842c36e69");
 
         System.out.println("Owner address: " + owner.getAddress());
 
-        Credentials user = Credentials.create(
-                "24af1f94b309dc185e543407020f47ad483df8c19d4e10e6b7c9d3fd055651e8",
-                "55c13b3f34db03306c367f18c951ca96d7d5288f22234c5396558f88c4430178cebad90993b6f08e23b190796159d09838715b0b2f65d69b1ae91f93ea8c6775");
-
-        System.out.println("User address: " + user.getAddress());
+        String userA = "8F318A705f08b81A5D3C9C856F584edE061c06dA";
+        System.out.println("UserA address: 0x" + userA);
+        String userB = "1b54F0707a12ec6c8a17CdFb2C9c69bBB6Fe98b9";
+        System.out.println("UserA address: 0x" + userB);
 
         Web3j web3j = Web3j.build(new HttpService("http://127.0.0.1:8545"));
-        NistTransactionManager transactionManagerOwner = new NistTransactionManager(web3j, owner);
-        NistTransactionManager transactionManagerUser = new NistTransactionManager(web3j, user);
+        NistTransactionManager transactionManagerOwner = new NistTransactionManager(web3j, owner , 2018);
 
+        System.out.println("Deploying ERC20 contract...");
         DemoErc20 tokenOwner = DemoErc20.deploy(web3j, transactionManagerOwner, new DefaultGasProvider()).send();
 
         System.out.println("Contract deployed at " +  tokenOwner.getContractAddress());
         System.out.println("Contract deployed tx id " +  tokenOwner.getTransactionReceipt().get().getTransactionHash());
+        System.out.println("Owner has 10.000 tokens");
 
         BigInteger decimals = tokenOwner.decimals().send();
-        BigInteger transferAmountOwner = BigInteger.valueOf(10).multiply(decimals);
+        BigInteger multiplier = BigInteger.valueOf(10).pow(decimals.intValue());
 
-        TransactionReceipt receiptTransferOwner = tokenOwner.transfer(user.getAddress(), transferAmountOwner).send();
-        System.out.println("Sent 10 tokens to " + user.getAddress() + ": " + receiptTransferOwner.getTransactionHash());
+        System.out.println("Sending 1.000 tokens to userA");
+        BigInteger transferAmountUserA = BigInteger.valueOf(1000).multiply(multiplier);
+        TransactionReceipt receiptTransferUserA = tokenOwner.transfer(userA, transferAmountUserA).send();
+        System.out.println("Transfer successful: " + receiptTransferUserA.getTransactionHash());
 
-        DemoErc20 tokenUser = DemoErc20.load(tokenOwner.getContractAddress(), web3j, transactionManagerUser, new DefaultGasProvider());
-
-        BigInteger transferAmountUser = BigInteger.valueOf(5).multiply(decimals);
-
-        TransactionReceipt receiptTransferUser = tokenUser.transfer(owner.getAddress(), transferAmountUser).send();
-        System.out.println("Sent 5 tokens to " + owner.getAddress() + ": " + receiptTransferUser.getTransactionHash());
+        System.out.println("Sending 500 tokens to userB");
+        BigInteger transferAmountUserB = BigInteger.valueOf(500).multiply(multiplier);
+        TransactionReceipt receiptTransferUserB = tokenOwner.transfer(userB, transferAmountUserB).send();
+        System.out.println("Transfer successful: " + receiptTransferUserB.getTransactionHash());
     }
 }

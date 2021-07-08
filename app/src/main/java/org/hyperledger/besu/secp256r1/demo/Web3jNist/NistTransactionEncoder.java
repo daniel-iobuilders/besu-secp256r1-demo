@@ -2,7 +2,6 @@ package org.hyperledger.besu.secp256r1.demo.Web3jNist;
 
 import org.web3j.crypto.Credentials;
 import org.web3j.crypto.RawTransaction;
-import org.web3j.crypto.Sign;
 import org.web3j.rlp.RlpEncoder;
 import org.web3j.rlp.RlpList;
 import org.web3j.rlp.RlpString;

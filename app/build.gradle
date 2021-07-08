@@ -15,11 +15,14 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'junit:junit:4.13'
+    compile ('org.web3j:core:4.8.4')
 
     implementation 'com.google.guava:guava:29.0-jre'
     implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.14.1'
-    compile ('org.web3j:core:4.8.4')
+
+    testImplementation 'junit:junit:4.13'
+    testCompile("org.assertj:assertj-core:3.11.1")
+    testImplementation "org.mockito:mockito-core:3.+"
 }
 
 application {
