@@ -10,8 +10,8 @@ import org.bouncycastle.crypto.signers.ECDSASigner;
 import org.bouncycastle.crypto.signers.HMacDSAKCalculator;
 import org.bouncycastle.math.ec.ECAlgorithms;
 import org.bouncycastle.math.ec.ECPoint;
+import org.bouncycastle.math.ec.FixedPointCombMultiplier;
 import org.bouncycastle.math.ec.custom.sec.SecP256R1Curve;
-import org.web3j.crypto.ECDSASignature;
 import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Hash;
 import org.web3j.utils.Numeric;
@@ -167,6 +167,47 @@ public class NistSign {
         byte[] compEnc = x9.integerToBytes(xBN, 1 + x9.getByteLength(CURVE.getCurve()));
         compEnc[0] = (byte) (yBit ? 0x03 : 0x02);
         return CURVE.getCurve().decodePoint(compEnc);
+    }
+
+
+    /**
+     * Returns public key from the given private key.
+     *
+     * @param privKey the private key to derive the public key from
+     * @return BigInteger encoded public key
+     */
+    public static BigInteger publicKeyFromPrivate(BigInteger privKey) {
+        ECPoint point = publicPointFromPrivate(privKey);
+
+        byte[] encoded = point.getEncoded(false);
+        return new BigInteger(1, Arrays.copyOfRange(encoded, 1, encoded.length)); // remove prefix
+    }
+
+    /**
+     * Returns public key point from the given private key.
+     *
+     * @param privKey the private key to derive the public key from
+     * @return ECPoint public key
+     */
+    public static ECPoint publicPointFromPrivate(BigInteger privKey) {
+        /*
+         * TODO: FixedPointCombMultiplier currently doesn't support scalars longer than the group
+         * order, but that could change in future versions.
+         */
+        if (privKey.bitLength() > CURVE.getN().bitLength()) {
+            privKey = privKey.mod(CURVE.getN());
+        }
+        return new FixedPointCombMultiplier().multiply(CURVE.getG(), privKey);
+    }
+
+    /**
+     * Returns public key point from the given curve.
+     *
+     * @param bits representing the point on the curve
+     * @return BigInteger encoded public key
+     */
+    public static BigInteger publicFromPoint(byte[] bits) {
+        return new BigInteger(1, Arrays.copyOfRange(bits, 1, bits.length)); // remove prefix
     }
 
     public static class SignatureData {

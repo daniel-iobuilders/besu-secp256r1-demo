@@ -1,6 +1,5 @@
 package org.hyperledger.besu.secp256r1.demo.Web3jNist;
 
-import org.web3j.crypto.Credentials;
 import org.web3j.crypto.RawTransaction;
 import org.web3j.rlp.RlpEncoder;
 import org.web3j.rlp.RlpList;
@@ -19,7 +18,7 @@ public class NistTransactionEncoder {
     private static final int CHAIN_ID_INC = 35;
     private static final int LOWER_REAL_V = 27;
 
-    public static byte[] signMessage(RawTransaction rawTransaction, Credentials credentials) {
+    public static byte[] signMessage(RawTransaction rawTransaction, NistCredentials credentials) {
         byte[] encodedTransaction = encode(rawTransaction);
         NistSign.SignatureData signatureData =
                 NistSign.signMessage(encodedTransaction, credentials.getEcKeyPair());
@@ -28,7 +27,7 @@ public class NistTransactionEncoder {
     }
 
     public static byte[] signMessage(
-            RawTransaction rawTransaction, long chainId, Credentials credentials) {
+            RawTransaction rawTransaction, long chainId, NistCredentials credentials) {
         byte[] encodedTransaction = encode(rawTransaction, chainId);
         NistSign.SignatureData signatureData =
                 NistSign.signMessage(encodedTransaction, credentials.getEcKeyPair());

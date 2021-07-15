@@ -1,6 +1,5 @@
 package org.hyperledger.besu.secp256r1.demo.Web3jNist;
 
-import org.web3j.crypto.Credentials;
 import org.web3j.crypto.Hash;
 import org.web3j.crypto.RawTransaction;
 import org.web3j.protocol.Web3j;
@@ -25,13 +24,13 @@ import java.math.BigInteger;
 public class NistTransactionManager extends TransactionManager {
 
     private final Web3j web3j;
-    final Credentials credentials;
+    final NistCredentials credentials;
 
     private final long chainId;
 
     protected TxHashVerifier txHashVerifier = new TxHashVerifier();
 
-    public NistTransactionManager(Web3j web3j, Credentials credentials, long chainId) {
+    public NistTransactionManager(Web3j web3j, NistCredentials credentials, long chainId) {
         super(web3j, credentials.getAddress());
 
         this.web3j = web3j;
@@ -42,7 +41,7 @@ public class NistTransactionManager extends TransactionManager {
 
     public NistTransactionManager(
             Web3j web3j,
-            Credentials credentials,
+            NistCredentials credentials,
             long chainId,
             TransactionReceiptProcessor transactionReceiptProcessor) {
         super(transactionReceiptProcessor, credentials.getAddress());
@@ -54,7 +53,7 @@ public class NistTransactionManager extends TransactionManager {
     }
 
     public NistTransactionManager(
-            Web3j web3j, Credentials credentials, long chainId, int attempts, long sleepDuration) {
+            Web3j web3j, NistCredentials credentials, long chainId, int attempts, long sleepDuration) {
         super(web3j, attempts, sleepDuration, credentials.getAddress());
 
         this.web3j = web3j;
@@ -63,12 +62,12 @@ public class NistTransactionManager extends TransactionManager {
         this.chainId = chainId;
     }
 
-    public NistTransactionManager(Web3j web3j, Credentials credentials) {
+    public NistTransactionManager(Web3j web3j, NistCredentials credentials) {
         this(web3j, credentials, ChainIdLong.NONE);
     }
 
     public NistTransactionManager(
-            Web3j web3j, Credentials credentials, int attempts, int sleepDuration) {
+            Web3j web3j, NistCredentials credentials, int attempts, int sleepDuration) {
         this(web3j, credentials, ChainIdLong.NONE, attempts, sleepDuration);
     }
 
